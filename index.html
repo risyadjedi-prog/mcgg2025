@@ -1,53 +1,104 @@
-
+<!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <title>Prediksi Lawan Magic Chess Gogo</title>
-  <style>
-    body { font-family: Arial, sans-serif; text-align: center; background: #111; color: #eee; }
-    h1 { color: #0f0; }
-    table { margin: 20px auto; border-collapse: collapse; width: 80%; }
-    th, td { border: 1px solid #555; padding: 8px; }
-    th { background: #222; }
-    input { margin: 5px; padding: 5px; }
-    button { padding: 6px 12px; margin: 10px; background: #0f0; border: none; cursor: pointer; }
-    button:hover { background: #0c0; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Prediksi Lawan - Sistem Mantan</title>
+<style>
+  body { font-family: Arial, sans-serif; background:#0d0d0d; color:#eee; margin:0; padding:12px; }
+  h1 { text-align:center; color:#00ff88; font-size:18px; }
+  .box { max-width:600px; margin:0 auto; background:#111; padding:12px; border-radius:8px; }
+  input, select { width:100%; margin:6px 0; padding:8px; background:#1a1a1a; color:#eee; border:1px solid #333; border-radius:5px; }
+  button { margin:8px 0; padding:10px; background:#00ff88; border:none; border-radius:6px; font-weight:bold; cursor:pointer; }
+  button:hover { background:#00cc66; }
+  .result { margin-top:12px; padding:10px; background:#000; border-radius:6px; }
+</style>
 </head>
 <body>
-  <h1>🧩 Prediksi Lawan Magic Chess Gogo</h1>
-  <p>Masukkan nama 8 pemain (Player1 = kamu):</p>
-  <div id="inputs"></div>
-  <button onclick="generate()">Buat Tabel Prediksi</button>
-  <div id="result"></div>
+<h1>🔮 Prediksi Lawan - Rumus Mantan</h1>
+<div class="box">
+  <label>Nama Kamu (Player1):</label>
+  <input type="text" id="you" value="Kamu">
+
+  <label>Daftar Musuh (Player2 - Player8):</label>
+  <div id="enemyInputs"></div>
+
+  <label>Round sekarang:</label>
+  <input type="number" id="round" value="2" min="2" max="50">
+
+  <label>Lawan kamu di round ini:</label>
+  <select id="currentOpponent"></select>
+
+  <label>(Opsional) Lawan Mantan1 di Round 4:</label>
+  <select id="mantan1Round4"></select>
+
+  <label>(Opsional) Lawan Mantan2 di Round 5:</label>
+  <select id="mantan2Round5"></select>
+
+  <button onclick="predict()">Prediksi Lawan Berikutnya</button>
+  <div class="result" id="output"></div>
+</div>
 
 <script>
-function generate() {
-  const players = [];
-  for (let i = 1; i <= 8; i++) {
-    players.push(document.getElementById("p" + i).value || "Player" + i);
+let players = [];
+
+function initPlayers(){
+  const div = document.getElementById("enemyInputs");
+  div.innerHTML = "";
+  for (let i=2; i<=8; i++){
+    div.innerHTML += `<input type="text" id="p${i}" value="Player${i}">`;
+  }
+  refreshSelects();
+}
+
+function refreshSelects(){
+  players = [document.getElementById("you").value || "Kamu"];
+  for (let i=2; i<=8; i++){
+    players.push(document.getElementById("p"+i).value || ("Player"+i));
   }
 
-  let html = "<table><tr><th>Round</th><th>Lawan " + players[0] + "</th></tr>";
-  for (let round = 1; round <= 20; round++) {
-    if (round === 1) {
-      html += `<tr><td>${round}</td><td>Creep</td></tr>`;
-    } else {
-      let idx = (round - 2) % (players.length - 1) + 1;
-      html += `<tr><td>${round}</td><td>${players[idx]}</td></tr>`;
+  const selects = ["currentOpponent","mantan1Round4","mantan2Round5"];
+  selects.forEach(id=>{
+    const sel = document.getElementById(id);
+    sel.innerHTML = "";
+    for (let i=1;i<players.length;i++){
+      sel.innerHTML += `<option value="${i}">${players[i]}</option>`;
     }
-  }
-  html += "</table>";
-  document.getElementById("result").innerHTML = html;
+  });
 }
 
-window.onload = function() {
-  let inputs = "";
-  for (let i = 1; i <= 8; i++) {
-    inputs += `<input type='text' id='p${i}' placeholder='Player${i}'>`;
+function predict(){
+  const round = parseInt(document.getElementById("round").value);
+  const you = players[0];
+  const oppIdx = parseInt(document.getElementById("currentOpponent").value);
+  const mantan1R4 = document.getElementById("mantan1Round4").value;
+  const mantan2R5 = document.getElementById("mantan2Round5").value;
+
+  let prediksi = "";
+
+  if(round===2){
+    prediksi = `Round 3 kamu masih akan lawan ${players[oppIdx]} (Mantan 1).`;
   }
-  document.getElementById("inputs").innerHTML = inputs;
+  else if(round===3){
+    prediksi = `Round 4 acak. Ingat, Mantan 1 (${players[oppIdx]}) lawan siapa di sini.`;
+  }
+  else if(round===4 && mantan1R4){
+    prediksi = `Round 5 kamu akan lawan ${players[mantan1R4]} (karena dia lawan Mantan 1 di R4).`;
+  }
+  else if(round===5 && mantan2R5){
+    prediksi = `Round 6 kamu akan lawan ${players[mantan2R5]} (lawan Mantan 2 di R5).`;
+  }
+  else if(round===6){
+    prediksi = `Round 7 kamu swap: lawan musuh dari Mantan 1 di R6.`;
+  }
+  else {
+    prediksi = "Gunakan pola Mantan berulang sesuai rule.";
+  }
+
+  document.getElementById("output").innerText = prediksi;
 }
+
+window.onload=initPlayers;
 </script>
 </body>
 </html>
